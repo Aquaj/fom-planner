@@ -5,36 +5,36 @@ class Tile {
   y: number;
   width: number;
   height: number;
-  shape: createjs.Shape;
+  rootElement: createjs.Shape;
   fillColor: string;
   onDragCallbacks: (() => void)[];
 
   constructor(x: number, y: number, width: number, height: number, fillColor: string = "lightblue") {
-    this.x = 0;
-    this.y = 0;
+    this.rootElement = new createjs.Shape();
 
     this.width = width;
     this.height = height;
 
-    this.shape = new createjs.Shape();
+    this.setPosition(x, y);
     this.fillColor = fillColor;
 
-    this.shape.cursor = "pointer";
+    this.rootElement.cursor = "pointer";
     this.onDragCallbacks = [];
-    this.shape.on("pressmove", (event: createjs.Event) => this.handleDrag(event));
-
-    this.drawTile();
-
-    this.setPosition(x, y);
+    this.rootElement.on("pressmove", (event: createjs.Event) => this.handleDrag(event));
   }
 
-  drawTile() {
-    this.shape.graphics
-      .clear()
+  draw() {
+    this.defaultLook();
+  }
+
+  defaultLook() {
+    console.log("Drawing tile - " + this.fillColor + ": " + this.x + ", " + this.y);
+    this.rootElement.graphics.clear()
       .beginFill(this.fillColor)
       .setStrokeStyle(1)
       .beginStroke("black")
-      .drawRect(this.x, this.y, this.width, this.height);
+      .drawRect(0, 0, this.width, this.height);
+    this.setPosition(this.x, this.y);
   }
 
   handleDrag(event: createjs.Event) {
@@ -60,8 +60,8 @@ class Tile {
   setPosition(x: number, y: number) {
     this.x = x;
     this.y = y;
-    this.shape.x = x;
-    this.shape.y = y;
+    this.rootElement.x = x;
+    this.rootElement.y = y;
   }
 }
 

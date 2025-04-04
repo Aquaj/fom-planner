@@ -4,8 +4,9 @@ class TileSlot {
   id: string;
   width: number;
   height: number;
-  shape: createjs.Shape;
+  rootElement: createjs.Shape;
   selected: boolean;
+  hovered: boolean;
   selectCallbacks: (() => void)[];
 
   constructor(id: string, width: number, height: number) {
@@ -15,68 +16,71 @@ class TileSlot {
     this.selected = false;
     this.selectCallbacks = [];
 
-    this.shape = new createjs.Shape();
-    this.defaultLook();
+    this.rootElement = new createjs.Shape();
+    this.draw();
 
-    this.shape.cursor = "pointer";
+    this.rootElement.cursor = "pointer";
 
-    this.shape.addEventListener("mouseover", () => {
-      if (!this.selected) {
-        this.hover();
-      }
+    this.rootElement.addEventListener("mouseover", () => {
+      this.hovered = true;
+      this.draw();
     });
-    this.shape.addEventListener("mouseout", () => {
-      if (!this.selected) {
-        this.defaultLook();
-      }
+    this.rootElement.addEventListener("mouseout", () => {
+      this.hovered = false;
+      this.draw();
     });
-    this.shape.addEventListener("click", () => {
+    this.rootElement.addEventListener("click", () => {
       this.toggleSelect();
+      this.draw();
     });
   }
 
-  setPosition(x: number, y: number) {
-    this.shape.x = x;
-    this.shape.y = y;
-  }
-
-  hover() {
-    this.shape.graphics.clear()
-      .beginFill("lightgray")
-      .setStrokeStyle(1)
-      .beginStroke("black")
-      .drawRect(0, 0, this.width, this.height);
-  }
-
-  toggleSelect() {
+  draw() {
     if (this.selected) {
-      this.unselect();
+      this.selectedLook();
+    } else if (this.hovered) {
+      this.hoveredLook();
     } else {
-      this.select();
+      this.defaultLook();
     }
   }
 
-  select() {
-    this.selectCallbacks.forEach(callback => callback(this));
-    this.selected = true;
-    this.shape.graphics.clear()
+  selectedLook() {
+    this.rootElement.graphics.clear()
       .beginFill("lightgray")
       .setStrokeStyle(3)
       .beginStroke("black")
       .drawRect(0, 0, this.width, this.height);
   }
 
-  unselect() {
-    this.selected = false;
-    this.defaultLook();
-  }
-
   defaultLook() {
-    this.shape.graphics.clear()
+    this.rootElement.graphics.clear()
       .beginFill("white")
       .setStrokeStyle(1)
       .beginStroke("black")
       .drawRect(0, 0, this.width, this.height);
+  }
+
+  hoveredLook() {
+    this.rootElement.graphics.clear()
+      .beginFill("lightgray")
+      .setStrokeStyle(1)
+      .beginStroke("black")
+      .drawRect(0, 0, this.width, this.height);
+  }
+
+  setPosition(x: number, y: number) {
+    this.rootElement.x = x;
+    this.rootElement.y = y;
+  }
+
+  toggleSelect() {
+    if (this.selected) {
+      this.selected = false;
+    } else {
+      this.selected = true;
+      this.selectCallbacks.forEach(callback => callback(this));
+    }
   }
 
   onSelect(callback: () => void) {
