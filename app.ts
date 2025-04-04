@@ -43,6 +43,7 @@ for(let i = 0; i < 17; i++) {
   const initialPos = drawer.corners()[i];
   const tile = new Tile(initialPos.x, initialPos.y, tileWidth, tileHeight, color);
   register(tile, { zIndex: 2 });
+
   tile.onDrag(() => {
     var i = 0;
     const newOrder = [tile, ...tiles.filter((t => t !== tile))]

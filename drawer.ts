@@ -5,11 +5,40 @@ class Drawer {
   background: createjs.Shape;
   grid: Grid;
   rootElement: createjs.Container;
+  width: number;
+  height: number;
+  scroller: (event: WheelEvent) => void;
 
   constructor(width: number = 0, height: number = 0) {
     this.width = width;
     this.height = height;
     this.rootElement = new createjs.Container();
+    this.rootElement.on("mouseover", (event: createjs.Event) => {
+      console.log("mouseover");
+      this.scroller = (event: WheelEvent) => { this.scroll(event) };
+      document.addEventListener("wheel", this.scroller);
+    })
+    this.rootElement.on("mouseout", (event: createjs.Event) => {
+      console.log("mouseout");
+      document.removeEventListener("wheel", this.scroller);
+    })
+  }
+
+  scroll(event: WheelEvent) {
+    console.log("scroll", event.deltaY, this.grid.rootElement.y);
+    const grid_top = this.grid.rootElement.y;
+    const grid_bottom = this.grid.rootElement.y + this.grid.height;
+    if (grid_top >= 0 && event.deltaY > 0) {
+      this.grid.rootElement.y = 0;
+      return
+    }
+    if (grid_bottom <= this.height && event.deltaY < 0) {
+      this.grid.rootElement.y = this.height - this.grid.height;
+      return
+    }
+    if (grid_top <= 0 && grid_bottom >= this.height) {
+      this.grid.rootElement.y += event.deltaY;
+    }
   }
 
   draw() {
@@ -29,7 +58,7 @@ class Drawer {
   }
 
   addGrid() {
-    this.grid = new Grid(10, 10, this.width - 10, this.height);
+    this.grid = new Grid(20, 10, this.width - 10, this.height * 2);
     this.grid.draw();
     this.rootElement.addChild(this.grid.rootElement);
     this.rootElement.setChildIndex(this.grid.rootElement, 1);
