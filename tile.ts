@@ -8,6 +8,7 @@ class Tile {
   rootElement: createjs.Shape;
   fillColor: string;
   onDragCallbacks: (() => void)[];
+  onDropCallbacks: (() => void)[];
 
   constructor(x: number, y: number, width: number, height: number, fillColor: string = "lightblue") {
     this.rootElement = new createjs.Shape();
@@ -20,7 +21,9 @@ class Tile {
 
     this.rootElement.cursor = "pointer";
     this.onDragCallbacks = [];
+    this.onDropCallbacks = [];
     this.rootElement.on("pressmove", (event: createjs.Event) => this.handleDrag(event));
+    this.rootElement.on("pressup", (event: createjs.Event) => this.handleDrop(event));
   }
 
   draw() {
@@ -28,7 +31,6 @@ class Tile {
   }
 
   defaultLook() {
-    console.log("Drawing tile - " + this.fillColor + ": " + this.x + ", " + this.y);
     this.rootElement.graphics.clear()
       .beginFill(this.fillColor)
       .setStrokeStyle(1)
@@ -51,6 +53,17 @@ class Tile {
       )
     }
     event.target.parent.update();
+  }
+
+  handleDrop(event: createjs.Event) {
+    this.onDropCallbacks.forEach((callback) => {
+      callback(event);
+    });
+    event.target.parent.update();
+  }
+
+  onDrop(callback: () => void) {
+    this.onDropCallbacks.push(callback);
   }
 
   onDrag(callback: () => void) {

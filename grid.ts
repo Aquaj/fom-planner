@@ -7,17 +7,15 @@ class Grid {
   cols: number;
   height: number;
   width: number;
-  gridArray: any[];
   selectedRectangleId: string | null;
   slots: TileSlot[];
 
-  constructor(rows: number, cols: number, height: number | null = null, width: number | null = null) {
+  constructor(rows: number, cols: number, width?: number = null, height?: number = null) {
     this.rows = rows;
     this.cols = cols;
     this.height = height;
     this.width = width;
     this.rootElement = new createjs.Container();
-    this.gridArray = [];
     this.selectedRectangleId = null;
     this.slots = [];
   }
@@ -48,8 +46,8 @@ class Grid {
   corners() : { x: number, y: number }[] {
     return this.slots.map((slot) => {
       return {
-        x: slot.rootElement.x,
-        y: slot.rootElement.y
+        x: slot.rootElement.x + this.rootElement.x,
+        y: slot.rootElement.y + this.rootElement.y
       };
     });
   }
