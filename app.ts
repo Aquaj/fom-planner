@@ -56,14 +56,18 @@ const tileHeight = drawer.grid.height / drawer.grid.rows;
 
 for(let i = 0; i < 16; i++) {
   const color = createjs.Graphics.getHSL(Math.random() * 360, 80, 80);
-  const initialPos = drawer.corners()[i];
-  const tile = new Tile(initialPos.x, initialPos.y, tileWidth, tileHeight, color);
-  register(tile, { zIndex: 2 });
+  const initialSlot = drawer.grid.slots[i];
+  const tile = new Tile(0, 0, tileWidth, tileHeight, color);
 
-  tile.onDrag((event) => stage.update());
+  initialSlot.rootElement.addChild(tile.rootElement);
+  tile.setPosition(0, 0);
+  tile.draw();
+  initialSlot.rootElement.setChildIndex(tile.rootElement, 1);
 
   magnetizeTile(tile, map.corners(), tileWidth, stage);
   magnetizeTile(tile, drawer.corners(), tileWidth, stage);
+
+  tile.onDrag((event) => stage.update());
 
   tiles.push(tile);
 }
