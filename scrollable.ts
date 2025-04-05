@@ -6,11 +6,9 @@ const scrollable = {
       this.scroll(event, content, upperBound, lowerBound)
     };
     containerElement.on("mouseover", (event: createjs.Event) => {
-      console.log("Adding scroller");
       document.addEventListener("wheel", scroller);
     })
     containerElement.on("mouseout", (event: createjs.Event) => {
-      console.log("Removing scroller");
       document.removeEventListener("wheel", scroller);
     })
   },

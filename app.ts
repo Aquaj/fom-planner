@@ -27,17 +27,24 @@ stage.enableMouseOver();
 stage.clear();
 
 const map = new Grid(Config.map.rows, Config.map.cols, canvas.width / 2 - 5, canvas.height);
+map.onPan((event) => {
+  tiles.forEach((tile) => {
+    demagnetize(tile);
+    magnetize(tile, [...map.corners(), ...drawer.corners()], tileWidth * 0.4);
+    stage.update()
+  });
+});
 register(map, { zIndex: 0 });
 
 const drawer = new Drawer(canvas.width / 2 - 5, canvas.height);
 drawer.setPosition(map.width + 10, 0);
 register(drawer, { zIndex: 1 });
 
-var tiles = [];
+const tiles = [];
 const tileWidth = drawer.grid.width / drawer.grid.cols;
 const tileHeight = drawer.grid.height / drawer.grid.rows;
 
-for(let i = 0; i < 17; i++) {
+for(let i = 0; i < 16; i++) {
   const color = createjs.Graphics.getHSL(Math.random() * 360, 80, 80);
   const initialPos = drawer.corners()[i];
   const tile = new Tile(initialPos.x, initialPos.y, tileWidth, tileHeight, color);

@@ -58,9 +58,7 @@ class TileSlot {
   }
 
   defaultLook() {
-    const color = createjs.Graphics.getHSL(Math.random() * 360, 80, 80);
     this.rootElement.graphics.clear()
-      .beginFill(color)
       .setStrokeStyle(1)
       .beginStroke("black")
       .drawRect(0, 0, this.width, this.height);
