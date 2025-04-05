@@ -24,6 +24,7 @@ sizeUp();
 
 var stage = new createjs.Stage("canvas");
 createjs.Ticker.on("tick", () => stage.update())
+stage.framerate = 60;
 stage.enableMouseOver();
 stage.clear();
 
