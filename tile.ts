@@ -42,14 +42,15 @@ class Tile {
   handleDrag(event: createjs.Event) {
     var hasSetPosition = false;
     this.onDragCallbacks.forEach((callback) => {
-      if (hasSetPosition) return;
-      hasSetPosition = callback(event);
+      const hasCallbackSet = !!callback(event);
+      hasSetPosition = hasSetPosition || hasCallbackSet;
     });
 
     if (!hasSetPosition) {
+      const newPos = this.rootElement.parent.globalToLocal(event.stageX, event.stageY);
       this.setPosition(
-        event.stageX - this.width / 2,
-        event.stageY - this.height / 2
+        newPos.x - this.width / 2,
+        newPos.y - this.height / 2
       )
     }
     event.stopPropagation();
