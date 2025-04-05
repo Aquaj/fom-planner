@@ -3,7 +3,7 @@ import Config from './config';
 import Grid from './grid';
 import Tile from './tile';
 import Drawer from './drawer';
-import magnetize from './magnetism';
+import { magnetize, demagnetize } from './magnetism';
 
 function register(element: { rootElement: createjs.DisplayObject, draw: () => void }, options: { zIndex?: number } = {}) {
   stage.addChild(element.rootElement);
@@ -53,7 +53,8 @@ for(let i = 0; i < 17; i++) {
     });
   });
 
-  magnetize(tile, [...drawer.corners(), ...map.corners()], tileWidth * 0.4);
+  magnetize(tile, drawer.corners(), tileWidth * 0.4);
+  magnetize(tile, map.corners(), tileWidth * 0.4);
 
   tiles.push(tile);
 }
