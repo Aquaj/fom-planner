@@ -1,6 +1,6 @@
 
 const Config = {
-  width: 1500,
+  width: 1510,
   height: 750,
   map: {
     rows: 10,

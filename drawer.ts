@@ -16,7 +16,7 @@ class Drawer {
     this.height = height;
     this.rootElement = new createjs.Container();
     this.background = new createjs.Shape();
-    this.grid = new Grid(20, 10, this.width - 10, this.height * 2);
+    this.grid = new Grid(20, 10, this.width, this.height * 2);
 
     scrollable.makeScrollable(this, this.grid, 0, this.height);
   }
@@ -31,9 +31,9 @@ class Drawer {
       .setStrokeStyle(1)
       .beginStroke("black")
       .beginFill("brown")
-      .drawRect(0, 0, this.width - 10, this.height);
+      .drawRect(0, 0, this.width, this.height);
     this.rootElement.addChild(this.background);
-    this.rootElement.setChildIndex(this.background, 0);
+    this.rootElement.setChildIndex(this.background, 1);
   }
 
   addGrid() {
