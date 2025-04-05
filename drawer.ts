@@ -14,18 +14,15 @@ class Drawer {
     this.height = height;
     this.rootElement = new createjs.Container();
     this.rootElement.on("mouseover", (event: createjs.Event) => {
-      console.log("mouseover");
       this.scroller = (event: WheelEvent) => { this.scroll(event) };
       document.addEventListener("wheel", this.scroller);
     })
     this.rootElement.on("mouseout", (event: createjs.Event) => {
-      console.log("mouseout");
       document.removeEventListener("wheel", this.scroller);
     })
   }
 
   scroll(event: WheelEvent) {
-    console.log("scroll", event.deltaY, this.grid.rootElement.y);
     const grid_top = this.grid.rootElement.y;
     const grid_bottom = this.grid.rootElement.y + this.grid.height;
     if (grid_top >= 0 && event.deltaY > 0) {

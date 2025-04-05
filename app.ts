@@ -14,7 +14,6 @@ function register(element: { rootElement: createjs.DisplayObject, draw: () => vo
   }
 }
 
-
 const sizeUp = function() {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   canvas.width = Config.width;
