@@ -4,6 +4,7 @@ import Grid from './grid';
 import Tile from './tile';
 import Drawer from './drawer';
 import { magnetize, demagnetize } from './magnetism';
+import pannable from "./pannable";
 
 function register(element: { rootElement: createjs.DisplayObject, draw: () => void }, options: { zIndex?: number } = {}) {
   stage.addChild(element.rootElement);
@@ -27,6 +28,7 @@ stage.enableMouseOver();
 stage.clear();
 
 const map = new Grid(Config.map.rows, Config.map.cols, canvas.width / 2 - 5, canvas.height);
+pannable.makePannable(map);
 map.onPan((event) => {
   tiles.forEach((tile) => {
     demagnetize(tile);

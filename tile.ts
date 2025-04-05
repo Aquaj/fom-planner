@@ -52,14 +52,13 @@ class Tile {
         event.stageY - this.height / 2
       )
     }
-    event.target.parent.update();
+    event.stopPropagation();
   }
 
   handleDrop(event: createjs.Event) {
     this.onDropCallbacks.forEach((callback) => {
       callback(event);
     });
-    event.target.parent.update();
   }
 
   onDrop(callback: () => void) {

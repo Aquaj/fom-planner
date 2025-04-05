@@ -1,8 +1,6 @@
 import * as createjs from "createjs-module";
 import TileSlot from "./tile_slot";
 
-import pannable from "./pannable";
-
 class Grid {
   rootElement: createjs.Container;
   border: createjs.Shape;
@@ -22,8 +20,6 @@ class Grid {
     this.rootElement = new createjs.Container();
     this.selectedRectangleId = null;
     this.slots = [];
-
-    pannable.makePannable(this);
   }
 
   draw() : void {
