@@ -16,7 +16,9 @@ class TileSlot {
     this.selected = false;
     this.selectCallbacks = [];
 
-    this.rootElement = new createjs.Shape();
+    this.rootElement = new createjs.Container();
+    this.border = new createjs.Shape();
+    this.rootElement.addChild(this.border);
     this.draw();
 
     let hitbox = new createjs.Shape();
@@ -24,17 +26,17 @@ class TileSlot {
       .beginFill("black")
       .drawRect(0, 0, this.width, this.height);
     hitbox.cursor = "pointer";
-    this.rootElement.hitArea = hitbox;
+    this.border.hitArea = hitbox;
 
-    this.rootElement.addEventListener("mouseover", () => {
+    this.border.addEventListener("mouseover", () => {
       this.hovered = true;
       this.draw();
     });
-    this.rootElement.addEventListener("mouseout", () => {
+    this.border.addEventListener("mouseout", () => {
       this.hovered = false;
       this.draw();
     });
-    this.rootElement.addEventListener("click", () => {
+    this.border.addEventListener("click", (e) => {
       this.toggleSelect();
       this.draw();
     });
@@ -51,21 +53,21 @@ class TileSlot {
   }
 
   selectedLook() {
-    this.rootElement.graphics.clear()
+    this.border.graphics.clear()
       .setStrokeStyle(3)
       .beginStroke("black")
       .drawRect(0, 0, this.width, this.height);
   }
 
   defaultLook() {
-    this.rootElement.graphics.clear()
+    this.border.graphics.clear()
       .setStrokeStyle(1)
       .beginStroke("black")
       .drawRect(0, 0, this.width, this.height);
   }
 
   hoveredLook() {
-    this.rootElement.graphics.clear()
+    this.border.graphics.clear()
       .beginFill(createjs.Graphics.getRGB(255, 255, 0, 0.2))
       .setStrokeStyle(1)
       .beginStroke("black")

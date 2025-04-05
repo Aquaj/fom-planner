@@ -3,7 +3,7 @@ import Config from './config';
 import Grid from './grid';
 import Tile from './tile';
 import Drawer from './drawer';
-import { magnetize, demagnetize } from './magnetism';
+import { magnetizeTile, demagnetize } from './magnetism';
 import pannable from "./pannable";
 
 function register(element: { rootElement: createjs.DisplayObject, draw: () => void }, options: { zIndex?: number } = {}) {
@@ -32,7 +32,7 @@ pannable.makePannable(map);
 map.onPan((event) => {
   tiles.forEach((tile) => {
     demagnetize(tile);
-    magnetize(tile, [...map.corners(), ...drawer.corners()], tileWidth * 0.4);
+    magnetizeTile(tile, [...map.corners(), ...drawer.corners()], tileWidth, stage);
     stage.update()
   });
 });
@@ -52,18 +52,10 @@ for(let i = 0; i < 16; i++) {
   const tile = new Tile(initialPos.x, initialPos.y, tileWidth, tileHeight, color);
   register(tile, { zIndex: 2 });
 
-  tile.onDrag(() => {
-    var i = 0;
-    const newOrder = [tile, ...tiles.filter((t => t !== tile))]
-    newOrder.forEach((t) => {
-      tiles[i] = t;
-      stage.setChildIndex(t.rootElement, stage.children.length - i - 1);
-      i = i + 1;
-    });
-  });
+  tile.onDrag((event) => stage.update());
 
-  magnetize(tile, drawer.corners(), tileWidth * 0.4);
-  magnetize(tile, map.corners(), tileWidth * 0.4);
+  magnetizeTile(tile, map.corners(), tileWidth, stage);
+  magnetizeTile(tile, drawer.corners(), tileWidth, stage);
 
   tiles.push(tile);
 }

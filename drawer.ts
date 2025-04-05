@@ -51,7 +51,8 @@ class Drawer {
     return this.grid.corners().map((slot) => {
       return {
         x: slot.x + this.rootElement.x,
-        y: slot.y + this.rootElement.y
+        y: slot.y + this.rootElement.y,
+        slot: slot.slot
       }
     })
   }

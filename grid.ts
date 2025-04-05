@@ -53,7 +53,8 @@ class Grid {
     return this.slots.map((slot) => {
       return {
         x: slot.rootElement.x + this.rootElement.x,
-        y: slot.rootElement.y + this.rootElement.y
+        y: slot.rootElement.y + this.rootElement.y,
+        slot: slot
       };
     });
   }
