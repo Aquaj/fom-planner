@@ -40,6 +40,13 @@ register(map, { zIndex: 0 });
 
 const drawer = new Drawer(canvas.width / 2 - 5, canvas.height);
 drawer.setPosition(map.width + 10, 0);
+drawer.onScroll((event) => {
+  tiles.forEach((tile) => {
+    demagnetize(tile);
+    magnetizeTile(tile, [...map.corners(), ...drawer.corners()], tileWidth, stage);
+    stage.update()
+  });
+});
 register(drawer, { zIndex: 1 });
 
 const tiles = [];

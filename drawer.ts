@@ -56,6 +56,10 @@ class Drawer {
       }
     })
   }
+
+  onScroll(callback) {
+    this.grid.onScroll(callback);
+  }
 }
 
 export default Drawer;
