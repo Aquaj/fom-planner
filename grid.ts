@@ -1,14 +1,18 @@
 import * as createjs from "createjs-module";
 import TileSlot from "./tile_slot";
 
+import pannable from "./pannable";
+
 class Grid {
   rootElement: createjs.Container;
+  border: createjs.Shape;
   rows: number;
   cols: number;
   height: number;
   width: number;
   selectedRectangleId: string | null;
   slots: TileSlot[];
+  panner: (event: createjs.Event) => void;
 
   constructor(rows: number, cols: number, width?: number = null, height?: number = null) {
     this.rows = rows;
@@ -18,10 +22,16 @@ class Grid {
     this.rootElement = new createjs.Container();
     this.selectedRectangleId = null;
     this.slots = [];
+
+    pannable.makePannable(this);
   }
 
   draw() : void {
     this.rootElement.removeAllChildren();
+
+    this.border = new createjs.Shape();
+    this.rootElement.addChild(this.border);
+    this.border.graphics.beginStroke("Black").drawRect(0, 0, this.width, this.height);
 
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
