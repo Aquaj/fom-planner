@@ -10,7 +10,6 @@ import pannable from "./pannable";
 function register(element: { rootElement: createjs.DisplayObject, draw: () => void }, options: { zIndex?: number } = {}) {
   stage.addChild(element.rootElement);
   element.draw();
-  stage.update();
   if (options.zIndex) {
     stage.setChildIndex(element.rootElement, options.zIndex);
   }
@@ -24,9 +23,6 @@ const sizeUp = function() {
 sizeUp();
 
 var stage = new createjs.Stage("canvas");
-createjs.Ticker.on("tick", () => stage.update())
-stage.framerate = 60;
-stage.enableMouseOver();
 stage.clear();
 
 var img = new Image();
@@ -82,6 +78,22 @@ for(let i = 0; i < 16; i++) {
 
   tiles.push(tile);
 }
+const fpsLabel = new createjs.Text("-- fps", "bold 18px Arial", "#444");
+stage.addChild(fpsLabel);
+fpsLabel.x = 10;
+fpsLabel.y = 20;
+
+createjs.Ticker.timingMode = createjs.Ticker.RAF;
+createjs.Ticker.addEventListener("tick", () => {
+  fpsLabel.text = Math.round(createjs.Ticker.getMeasuredFPS()) + " fps";
+  // draw the updates to stage:
+  stage.update(event);
+});
+stage.framerate = 40;
+stage.enableMouseOver();
+
+console.log('stage', stage);
+console.log('map', map);
 
 // TODO:
 // - Absolute positioning system?

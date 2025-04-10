@@ -16,7 +16,7 @@ class Drawer {
     this.height = height;
     this.rootElement = new createjs.Container();
     this.background = new createjs.Shape();
-    this.grid = new Grid(20, 10, this.width, this.height * 2);
+    this.grid = new Grid(this.height * 2 / 32, this.width / 32, this.width, this.height * 2);
 
     scrollable.makeScrollable(this, this.grid, 0, this.height);
   }

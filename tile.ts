@@ -27,7 +27,7 @@ class Tile {
   }
 
   draw() {
-    this.defaultLook();
+    this.rootElement.cache(0, 0, this.width, this.height);
   }
 
   defaultLook() {
