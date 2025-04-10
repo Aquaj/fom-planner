@@ -3,6 +3,7 @@ import Config from './config';
 import Grid from './grid';
 import Viewport from './viewport';
 import Tile from './tile';
+import TileTemplate from './tile_template';
 import Drawer from './drawer';
 import { magnetizeTile, demagnetize } from './magnetism';
 import pannable from "./pannable";
@@ -61,22 +62,29 @@ const tiles = [];
 const tileWidth = 32
 const tileHeight = 32
 
-for(let i = 0; i < 16; i++) {
+for(let i = 0; i < 25; i++) {
   const color = createjs.Graphics.getHSL(Math.random() * 360, 80, 80);
   const initialSlot = drawer.grid.slots[i];
-  const tile = new Tile(0, 0, tileWidth, tileHeight, color);
+  const tile = new TileTemplate(0, 0, tileWidth, tileHeight, color);
 
   initialSlot.rootElement.addChild(tile.rootElement);
   tile.setPosition(0, 0);
   tile.draw();
   initialSlot.rootElement.setChildIndex(tile.rootElement, 1);
 
-  magnetizeTile(tile, map.corners(), tileWidth, stage);
-  magnetizeTile(tile, drawer.corners(), tileWidth, stage);
+  tile.onTileCreated((newTile) => {
+    tiles.push(newTile);
+    stage.addChild(newTile.rootElement);
+    // Maybe move into Tile?
+    newTile.onDrag((event) => {
+      newTile.rootElement.alpha = 0.5;
+    });
+    newTile.onDrop((event) => {
+      newTile.rootElement.alpha = 1;
+    });
+    magnetizeTile(newTile, ...map.corners(), tileWidth, stage);
+  });
 
-  tile.onDrag((event) => stage.update());
-
-  tiles.push(tile);
 }
 const fpsLabel = new createjs.Text("-- fps", "bold 18px Arial", "#444");
 stage.addChild(fpsLabel);
@@ -96,9 +104,7 @@ console.log('stage', stage);
 console.log('map', map);
 
 // TODO:
-// - Absolute positioning system?
-// - TileSet drawer
-// - Background image
+// - FIX BUG: Magnetism underperformance
 // - Tile removal
 // - Collision
 // - See the actual features from Stardew Valley farm planner
