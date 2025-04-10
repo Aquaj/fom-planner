@@ -1,6 +1,7 @@
 import * as createjs from 'createjs-module';
 import Config from './config';
 import Grid from './grid';
+import Viewport from './viewport';
 import Tile from './tile';
 import Drawer from './drawer';
 import { magnetizeTile, demagnetize } from './magnetism';
@@ -28,7 +29,17 @@ stage.framerate = 60;
 stage.enableMouseOver();
 stage.clear();
 
-const map = new Grid(Config.map.rows, Config.map.cols, canvas.width / 2 - 5, canvas.height);
+var img = new Image();
+const map = new Grid(
+  Config.map.rows,
+  Config.map.cols,
+  Config.map.width,
+  Config.map.height,
+  img
+);
+img.src = Config.map.backgroundImage;
+
+const mapView = new Viewport(map, canvas.width / 2 - 5, canvas.height, 0, 0);
 pannable.makePannable(map);
 map.onPan((event) => {
   tiles.forEach((tile) => {
@@ -37,10 +48,10 @@ map.onPan((event) => {
     stage.update()
   });
 });
-register(map, { zIndex: 0 });
+register(mapView, { zIndex: -1 });
 
 const drawer = new Drawer(canvas.width / 2 - 5, canvas.height);
-drawer.setPosition(map.width + 10, 0);
+drawer.setPosition(canvas.width / 2 + 10, 0);
 drawer.onScroll((event) => {
   tiles.forEach((tile) => {
     demagnetize(tile);
@@ -51,8 +62,8 @@ drawer.onScroll((event) => {
 register(drawer, { zIndex: 1 });
 
 const tiles = [];
-const tileWidth = drawer.grid.width / drawer.grid.cols;
-const tileHeight = drawer.grid.height / drawer.grid.rows;
+const tileWidth = 32
+const tileHeight = 32
 
 for(let i = 0; i < 16; i++) {
   const color = createjs.Graphics.getHSL(Math.random() * 360, 80, 80);
