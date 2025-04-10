@@ -1,76 +1,38 @@
 import createjs from 'createjs-module';
 
-interface Point {
-  x: number;
-  y: number;
-  snapDistance?: number;
-  unsnapDistance?: number;
-}
-interface Draggable {
-  x: number;
-  y: number;
-  onDrag: (callback: () => void) => void;
-  setPosition: (x: number, y: number) => void;
-}
-type DraggableConfig = {
-  snaps: Point[];
-  snappedTo: Point;
-}
-type Magnetism = Map<Draggable, DraggableConfig>;
-
 const magnetism: Magnetism = new Map();
-
-function demagnetize(draggable: Draggable, points?: Point[]) {
-  const config = magnetism.get(draggable);
-  if (!config) return;
-
-  if (points) {
-    config.snaps = config.snaps.filter((p) => {
-      return !points.some((p2) => p.x === p2.x && p.y === p2.y);
-    });
-  } else {
-    config.snaps = [];
-  }
-
-  if (config.snappedTo && points && points.includes(config.snappedTo)) {
-    config.snappedTo = null;
-  }
-}
 
 function magnetize(
   draggable: Draggable,
-  points: Point[],
+  slots: any[],
   snapDistance: number = 20,
   unsnapDistance: number = snapDistance + 10,
-  callback: () => void = (event) => {
-    drag(
-      draggable,
-      {
-        x: event.stageX - draggable.width / 2,
-        y: event.stageY - draggable.height / 2
-      })
-  }
+  callback = null,
 ) {
   const config = magnetism.get(draggable) || { snaps: [], snappedTo: null };
-  if (!magnetism.has(draggable)) { magnetism.set(draggable, config) }
-
-  config.snaps = config.snaps.filter((p) => {
-    return !points.some((p2) => p.x === p2.x && p.y === p2.y);
-  })
-  points.forEach((p) => {
-    if (p.snapDistance == null) p.snapDistance = snapDistance;
-    if (p.unsnapDistance == null) p.unsnapDistance = unsnapDistance;
-  });
-  config.snaps.push(...points);
-
-  if (config.snappedTo && !points.includes(config.snappedTo)) {
-    config.snappedTo = null;
+  if (!magnetism.has(draggable)) {
+    magnetism.set(draggable, config);
+    draggable.onDrag(callback);
   }
 
-  draggable.onDrag(callback);
+  config.snaps = config.snaps.filter((s1) => {
+    return !slots.some((s2) => s1.id === s2.rootElement.id);
+  })
+  config.snaps.push(...slots.map((slot) => {
+    return {
+      element: slot.rootElement,
+      id: slot.rootElement.id,
+      snapDistance: snapDistance,
+      unsnapDistance: unsnapDistance,
+    }
+  }));
+
+  if (config.snappedTo && !config.snaps.some((p) => p.id === config.snappedTo.id)) {
+    config.snappedTo = null;
+  }
 }
 
-function drag(draggable: Draggable, point: createjs.Event) {
+function snapToClosest(draggable: Draggable, cursor: createjs.Event) {
   const config = magnetism.get(draggable);
   if (!config) return false;
 
@@ -79,18 +41,21 @@ function drag(draggable: Draggable, point: createjs.Event) {
 
   const snaps = config.snaps;
   for (let i = 0; i < snaps.length; i++) {
-    const p = snaps[i];
+    const snap = snaps[i];
 
-    // Determine the distance from the mouse position to the point
-    const diffX = Math.abs(point.x - p.x);
-    const diffY = Math.abs(point.y - p.y);
+    const globalSlotPos = snap.element.localToGlobal(0, 0);
+
+    // Determine the distance from the mouse position to the slot
+    const diffX = Math.abs(cursor.x - globalSlotPos.x);
+    const diffY = Math.abs(cursor.y - globalSlotPos.y);
     const d = Math.sqrt(diffX * diffX + diffY * diffY);
+    debugger;
 
-    // If the current point is closeEnough and the closest (so far)
+    // If the current snap is closeEnough and the closest (so far)
     // Then choose it to snap to.
-    const closest = d < p.snapDistance && (dist == null || d < dist);
+    const closest = d < snap.snapDistance && (dist == null || d < dist);
     if (closest) {
-      neighbour = p;
+      neighbour = snap;
       dist = d;
     }
   }
@@ -98,8 +63,6 @@ function drag(draggable: Draggable, point: createjs.Event) {
   // If there is a close neighbour, snap to it.
   if (neighbour && config.snappedTo !== neighbour) {
     config.snappedTo = neighbour;
-    const newPos = draggable.rootElement.parent.globalToLocal(neighbour.x, neighbour.y);
-    draggable.setPosition(newPos.x, newPos.y);
     return true;
   }
   const snapTarget = config.snappedTo;
@@ -108,9 +71,10 @@ function drag(draggable: Draggable, point: createjs.Event) {
     return false;
   }
 
+  const globalSlotPos = snapTarget.element.localToGlobal(0, 0);
   const distToSnap = Math.sqrt(
-    Math.pow(point.x - snapTarget.x, 2) +
-      Math.pow(point.y - snapTarget.y, 2)
+    Math.pow(cursor.x - globalSlotPos.x, 2) +
+      Math.pow(cursor.y - globalSlotPos.y, 2)
   );
 
   if (distToSnap < config.snappedTo.unsnapDistance) {
@@ -129,7 +93,7 @@ function magnetizeTile(tile, slots, tileWidth, stage) {
     tile,
     slots,
     tileWidth * 0.4,
-    tileWidth * 0.4 + 10,
+    tileWidth * 0.5,
     (event) => {
       return tileSnap(
         tile,
@@ -142,20 +106,24 @@ function magnetizeTile(tile, slots, tileWidth, stage) {
 }
 
 function tileSnap(tile, point, stage) {
-  const didSnap = drag(tile, point);
+  const didSnap = snapToClosest(tile, point);
   const config = magnetism.get(tile);
 
   if (config.snappedTo) {
-    const slot = config.snappedTo.slot;
+    const slot = config.snappedTo.element;
 
-    if (slot.rootElement.children.includes(tile.rootElement)) return didSnap;
+    if (slot.children.includes(tile.rootElement)) return didSnap;
 
-    const newPos = tile.rootElement.localToLocal(0, 0, slot.rootElement);
-    tile.setPosition(newPos.x, newPos.y);
-    slot.rootElement.addChild(tile.rootElement);
+    const prevParent = tile.rootElement.parent;
+    if (prevParent) { prevParent.removeChild(tile.rootElement); }
+
+    tile.setPosition(0, 0);
+    slot.addChild(tile.rootElement);
   } else {
     if (!stage.children.includes(tile.rootElement)) {
       tile.setPosition(tile.rootElement.localToLocal(0, 0, stage));
+      const prevParent = tile.rootElement.parent;
+      if (prevParent) { prevParent.removeChild(tile.rootElement); }
       stage.addChild(tile.rootElement);
     }
   }

@@ -38,24 +38,10 @@ img.src = Config.map.backgroundImage;
 
 const mapView = new Viewport(map, canvas.width / 2 - 5, canvas.height, 0, 0);
 pannable.makePannable(map);
-map.onPan((event) => {
-  tiles.forEach((tile) => {
-    demagnetize(tile);
-    magnetizeTile(tile, [...map.corners(), ...drawer.corners()], tileWidth, stage);
-    stage.update()
-  });
-});
 register(mapView, { zIndex: -1 });
 
 const drawer = new Drawer(canvas.width / 2 - 5, canvas.height);
 drawer.setPosition(canvas.width / 2 + 10, 0);
-drawer.onScroll((event) => {
-  tiles.forEach((tile) => {
-    demagnetize(tile);
-    magnetizeTile(tile, [...map.corners(), ...drawer.corners()], tileWidth, stage);
-    stage.update()
-  });
-});
 register(drawer, { zIndex: 1 });
 
 const tiles = [];
@@ -82,7 +68,7 @@ for(let i = 0; i < 25; i++) {
     newTile.onDrop((event) => {
       newTile.rootElement.alpha = 1;
     });
-    magnetizeTile(newTile, ...map.corners(), tileWidth, stage);
+    magnetizeTile(newTile, map.slots, tileWidth, stage);
   });
 
 }
@@ -104,7 +90,7 @@ console.log('stage', stage);
 console.log('map', map);
 
 // TODO:
-// - FIX BUG: Magnetism underperformance
+// - Refactor magnetism that's 🍝 right now
 // - Tile removal
 // - Collision
 // - See the actual features from Stardew Valley farm planner
