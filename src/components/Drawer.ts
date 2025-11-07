@@ -1,7 +1,7 @@
 import createjs from "createjs-module";
-import Grid from "./grid";
-import scrollable from "./scrollable";
-import type { Renderable, Dimensional, Container as IContainer } from './types';
+import Grid from "./Grid";
+import scrollable from "../systems/Scrollable";
+import type { Renderable, Dimensional, Container as IContainer } from '../types';
 
 class Drawer implements Renderable, Dimensional, IContainer {
   rootElement: createjs.Container;

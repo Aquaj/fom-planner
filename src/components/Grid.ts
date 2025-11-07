@@ -1,6 +1,6 @@
 import * as createjs from "createjs-module";
-import TileSlot from "./tile_slot";
-import type { Renderable, Dimensional, Pannable } from './types';
+import TileSlot from "../entities/TileSlot";
+import type { Renderable, Dimensional, Pannable } from '../types';
 
 class Grid implements Renderable, Dimensional, Pannable {
   rootElement: createjs.Container;

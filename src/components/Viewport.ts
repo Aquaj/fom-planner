@@ -1,5 +1,5 @@
 import createjs from "createjs-module";
-import type { Renderable, Dimensional } from './types';
+import type { Renderable, Dimensional } from '../types';
 
 class Viewport {
   content: Renderable & Dimensional;

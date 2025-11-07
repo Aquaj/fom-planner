@@ -1,5 +1,5 @@
 import createjs from "createjs-module";
-import type { Scrollable as IScrollable, Container } from './types';
+import type { Scrollable as IScrollable, Container } from '../types';
 
 const scrollable = {
   /**

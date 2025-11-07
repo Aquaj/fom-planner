@@ -1,12 +1,12 @@
 import * as createjs from 'createjs-module';
-import Config from './config';
-import Grid from './grid';
-import Viewport from './viewport';
-import Tile from './tile';
-import TileTemplate from './tile_template';
-import Drawer from './drawer';
-import { magnetizeTile, demagnetize } from './magnetism';
-import pannable from "./pannable";
+import Config from '../config';
+import Grid from '../components/Grid';
+import Viewport from '../components/Viewport';
+import Tile from '../entities/Tile';
+import TileTemplate from '../entities/TileTemplate';
+import Drawer from '../components/Drawer';
+import { magnetizeTile, demagnetize } from '../systems/MagnetismSystem';
+import pannable from "../systems/Pannable";
 
 function register(element: { rootElement: createjs.DisplayObject, draw: () => void }, options: { zIndex?: number } = {}) {
   stage.addChild(element.rootElement);

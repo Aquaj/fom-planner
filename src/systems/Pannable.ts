@@ -1,5 +1,5 @@
 import createjs from "createjs-module";
-import type { Pannable as IPannable, Point } from './types';
+import type { Pannable as IPannable, Point } from '../types';
 
 const pannable = {
   /**
