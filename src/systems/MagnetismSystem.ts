@@ -1,19 +1,19 @@
-import createjs from 'createjs-module';
+import * as PIXI from 'pixi.js';
 
 /**
  * Represents an object that can be dragged and snapped to targets
  */
 interface Draggable {
-  rootElement: createjs.DisplayObject;
+  rootElement: PIXI.Container;
   setPosition(x: number, y: number): void;
-  onDrag(callback: (event: createjs.Event) => boolean): void;
+  onDrag(callback: (event: PIXI.FederatedPointerEvent) => boolean): void;
 }
 
 /**
  * Represents a target that draggable objects can snap to
  */
 interface SnapTarget {
-  element: createjs.DisplayObject;
+  element: PIXI.Container;
   id: string;
   snapDistance: number;
   unsnapDistance: number;
@@ -61,7 +61,7 @@ class MagnetismSystem {
     slots: any[],
     snapDistance: number = 20,
     unsnapDistance: number = snapDistance + 10,
-    dragCallback: ((event: createjs.Event) => boolean) | null = null,
+    dragCallback: ((event: PIXI.FederatedPointerEvent) => boolean) | null = null,
   ): void {
     const config = this.getOrCreateConfig(draggable);
 
@@ -117,9 +117,10 @@ class MagnetismSystem {
     }
 
     // Check if we should unsnap from current target
+    const targetGlobal = config.snappedTo.element.toGlobal({ x: 0, y: 0 });
     const distanceToSnappedTarget = this.calculateDistance(
       cursorPosition,
-      config.snappedTo.element.localToGlobal(0, 0)
+      { x: targetGlobal.x, y: targetGlobal.y }
     );
 
     if (distanceToSnappedTarget < config.snappedTo.unsnapDistance) {
@@ -165,7 +166,8 @@ class MagnetismSystem {
     let closestDistance: number | null = null;
 
     for (const target of targets) {
-      const targetPosition = target.element.localToGlobal(0, 0);
+      const targetGlobal = target.element.toGlobal({ x: 0, y: 0 });
+      const targetPosition = { x: targetGlobal.x, y: targetGlobal.y };
       const distance = this.calculateDistance(cursorPosition, targetPosition);
 
       const isInRange = distance < target.snapDistance;
@@ -201,7 +203,7 @@ const magnetismSystem = new MagnetismSystem();
  * @param stage - The stage container
  * @returns true if snap occurred, false otherwise
  */
-function tileSnap(tile: any, point: Point, stage: createjs.Stage): boolean {
+function tileSnap(tile: any, point: Point, stage: PIXI.Container): boolean {
   const didSnap = magnetismSystem.snapToClosest(tile, point);
   const snappedTarget = magnetismSystem.getSnappedTarget(tile);
 
@@ -225,7 +227,7 @@ function tileSnap(tile: any, point: Point, stage: createjs.Stage): boolean {
     // Not snapped, should be on stage
     if (!stage.children.includes(tile.rootElement)) {
       // Convert position to stage coordinates
-      const stagePosition = tile.rootElement.localToLocal(0, 0, stage);
+      const stagePosition = tile.rootElement.toLocal({ x: 0, y: 0 }, stage);
       tile.setPosition(stagePosition.x, stagePosition.y);
 
       const prevParent = tile.rootElement.parent;
@@ -248,18 +250,18 @@ function tileSnap(tile: any, point: Point, stage: createjs.Stage): boolean {
  * @param tileWidth - Width of the tile (used to calculate snap distances)
  * @param stage - The stage container
  */
-function magnetizeTile(tile: any, slots: any[], tileWidth: number, stage: createjs.Stage): void {
+function magnetizeTile(tile: any, slots: any[], tileWidth: number, stage: PIXI.Container): void {
   magnetismSystem.magnetize(
     tile,
     slots,
     tileWidth * 0.4,  // Snap when within 40% of tile width
     tileWidth * 0.5,  // Unsnap when beyond 50% of tile width
-    (event: createjs.Event) => {
+    (event: PIXI.FederatedPointerEvent) => {
       return tileSnap(
         tile,
         {
-          x: event.stageX - tileWidth / 2,
-          y: event.stageY - tileWidth / 2
+          x: event.global.x - tileWidth / 2,
+          y: event.global.y - tileWidth / 2
         },
         stage
       );

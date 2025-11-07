@@ -1,4 +1,4 @@
-import createjs from "createjs-module";
+import * as PIXI from 'pixi.js';
 import type { Pannable as IPannable, Point } from '../types';
 
 const pannable = {
@@ -6,19 +6,29 @@ const pannable = {
    * Make a container pannable (draggable to move viewport)
    */
   makePannable: function (container: IPannable): void {
-    container.rootElement.on("mousedown", (event: createjs.Event) => {
-      const originalPos = { x: container.rootElement.x, y: container.rootElement.y };
-      const mousedownPos = { x: event.stageX, y: event.stageY };
+    container.rootElement.eventMode = 'static';
 
-      const mousemove = (event: createjs.Event) => {
+    container.rootElement.on("pointerdown", (event: PIXI.FederatedPointerEvent) => {
+      const originalPos = { x: container.rootElement.x, y: container.rootElement.y };
+      const mousedownPos = { x: event.global.x, y: event.global.y };
+
+      let isDragging = true;
+
+      const mousemove = (event: PIXI.FederatedPointerEvent) => {
+        if (!isDragging) return;
         this.pan(event, container, originalPos, mousedownPos);
       };
 
-      container.rootElement.on("pressmove", mousemove);
+      const mouseup = () => {
+        isDragging = false;
+        container.rootElement.off("pointermove", mousemove);
+        container.rootElement.off("pointerup", mouseup);
+        container.rootElement.off("pointerupoutside", mouseup);
+      };
 
-      container.rootElement.on("pressup", () => {
-        container.rootElement.off("pressmove", mousemove);
-      });
+      container.rootElement.on("pointermove", mousemove);
+      container.rootElement.on("pointerup", mouseup);
+      container.rootElement.on("pointerupoutside", mouseup);
     });
   },
 
@@ -26,13 +36,13 @@ const pannable = {
    * Handle pan movement
    */
   pan: function (
-    event: createjs.Event,
+    event: PIXI.FederatedPointerEvent,
     element: IPannable,
     originalPos: Point,
     mousedownPos: Point
   ): void {
-    const deltaX = event.stageX - mousedownPos.x;
-    const deltaY = event.stageY - mousedownPos.y;
+    const deltaX = event.global.x - mousedownPos.x;
+    const deltaY = event.global.y - mousedownPos.y;
 
     element.rootElement.x = originalPos.x + deltaX;
     element.rootElement.y = originalPos.y + deltaY;

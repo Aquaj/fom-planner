@@ -1,4 +1,4 @@
-import createjs from "createjs-module";
+import * as PIXI from 'pixi.js';
 import type { Scrollable as IScrollable, Container } from '../types';
 
 const scrollable = {
@@ -18,15 +18,17 @@ const scrollable = {
     };
 
     const containerElement = container.rootElement;
+    containerElement.eventMode = 'static';
+
     const scroller = (event: WheelEvent) => {
       this.scroll(event, content, upperBound, lowerBound);
     };
 
-    containerElement.on("mouseover", (event: createjs.Event) => {
+    containerElement.on("pointerover", () => {
       document.addEventListener("wheel", scroller);
     });
 
-    containerElement.on("mouseout", (event: createjs.Event) => {
+    containerElement.on("pointerout", () => {
       document.removeEventListener("wheel", scroller);
     });
   },
