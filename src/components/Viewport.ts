@@ -1,28 +1,34 @@
-import createjs from "createjs-module";
+import * as PIXI from 'pixi.js';
 import type { Renderable, Dimensional } from '../types';
 
 class Viewport {
   content: Renderable & Dimensional;
-  rootElement: createjs.Container;
+  rootElement: PIXI.Container;
 
   constructor(content: Renderable & Dimensional, width: number, height: number, x: number = 0, y: number = 0){
     this.content = content;
-    this.rootElement = new createjs.Container();
+    this.rootElement = new PIXI.Container();
     this.rootElement.x = x;
     this.rootElement.y = y;
 
-    const mask = new createjs.Shape();
-    mask.graphics.beginFill("black").drawRect(0, 0, width, height);
+    // Create mask
+    const mask = new PIXI.Graphics();
+    mask.rect(0, 0, width, height);
+    mask.fill({ color: 0x000000 });
+
+    // Add content and apply mask
     this.rootElement.addChild(this.content.rootElement);
     this.rootElement.mask = mask;
+    this.rootElement.addChild(mask); // Mask must be in display tree
 
     // Add border for visual clarity
-    const border = new createjs.Shape();
-    border.graphics.setStrokeStyle(2).beginStroke("black").drawRect(0, 0, width, height);
+    const border = new PIXI.Graphics();
+    border.rect(0, 0, width, height);
+    border.stroke({ color: 0x000000, width: 2 });
     this.rootElement.addChild(border);
 
-    this.content.rootElement.setBounds(0, 0, this.content.width, this.content.height);
-    this.rootElement.scale = this.content.width / width;
+    // Set scale
+    this.rootElement.scale.set(this.content.width / width);
   }
 
   draw(): void {

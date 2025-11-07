@@ -1,10 +1,11 @@
-import * as createjs from "createjs-module";
+import * as PIXI from 'pixi.js';
 import TileSlot from "../entities/TileSlot";
 import type { Renderable, Dimensional, Pannable } from '../types';
 
 class Grid implements Renderable, Dimensional, Pannable {
-  rootElement: createjs.Container;
-  border: createjs.Shape;
+  rootElement: PIXI.Container;
+  border: PIXI.Graphics;
+  background?: PIXI.Sprite;
   rows: number;
   cols: number;
   height: number;
@@ -13,7 +14,7 @@ class Grid implements Renderable, Dimensional, Pannable {
   y: number;
   selectedRectangleId: string | null;
   slots: TileSlot[];
-  panner: (event: createjs.Event) => void;
+  panner: (event: PIXI.FederatedPointerEvent) => void;
   backgroundImage: string | null;
 
   constructor(rows: number, cols: number, width: number = 0, height: number = 0, backgroundImage: HTMLImageElement | null = null) {
@@ -23,7 +24,8 @@ class Grid implements Renderable, Dimensional, Pannable {
     this.width = width;
     this.x = 0;
     this.y = 0;
-    this.rootElement = new createjs.Container();
+    this.rootElement = new PIXI.Container();
+    this.border = new PIXI.Graphics();
     this.selectedRectangleId = null;
     this.backgroundImage = backgroundImage as any; // Image element stored for background
     this.slots = [];
@@ -37,27 +39,25 @@ class Grid implements Renderable, Dimensional, Pannable {
   }
 
   draw() : void {
-    this.rootElement.removeAllChildren();
+    this.rootElement.removeChildren();
 
+    // Add background image if provided
     if (this.backgroundImage) {
-      this.backgroundImage.onload = () => {
-        this.background = new createjs.Shape();
-        this.rootElement.addChild(this.background);
-        this.background.graphics.
-          beginBitmapFill(this.backgroundImage, "no-repeat").
-          drawRect(0, 0, this.width, this.height);
-        this.rootElement.setChildIndex(this.background, 0);
-        this.background.cache(0, 0, this.width, this.height);
-      }
+      // Create texture from image source
+      const texture = PIXI.Texture.from(this.backgroundImage);
+      this.background = new PIXI.Sprite(texture);
+      this.background.width = this.width;
+      this.background.height = this.height;
+      this.rootElement.addChild(this.background);
     }
 
-    this.border = new createjs.Shape();
+    // Add border
+    this.border.clear();
+    this.border.rect(0, 0, this.width, this.height);
+    this.border.stroke({ color: 0x000000, width: 1 });
     this.rootElement.addChild(this.border);
-    this.border.graphics.clear()
-      .setStrokeStyle(1)
-      .beginStroke("black")
-      .drawRect(0, 0, this.width, this.height)
 
+    // Add tile slots
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols; col++) {
         const slotWidth = this.width / this.cols;
@@ -65,7 +65,6 @@ class Grid implements Renderable, Dimensional, Pannable {
 
         const tileSlot = new TileSlot(`${row}_${col}`, slotWidth, slotHeight, row, col);
         tileSlot.setPosition(col * slotWidth, row * slotHeight);
-        this.rootElement.setChildIndex(tileSlot.rootElement, 1);
         this.slots.push(tileSlot);
 
         this.rootElement.addChild(tileSlot.rootElement);
