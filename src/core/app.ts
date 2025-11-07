@@ -1,4 +1,4 @@
-import * as createjs from 'createjs-module';
+import * as PIXI from 'pixi.js';
 import Config from '../config';
 import Grid from '../components/Grid';
 import Viewport from '../components/Viewport';
@@ -9,25 +9,34 @@ import { magnetizeTile, demagnetize } from '../systems/MagnetismSystem';
 import pannable from "../systems/Pannable";
 import { itemTypeRegistry, gameState, GameState } from '../services';
 import type { ItemType } from '../types';
+import { hslToHex } from '../rendering/ShapeRenderer';
 
 // ============================================================================
 // Initialization
 // ============================================================================
 
-function register(element: { rootElement: createjs.DisplayObject, draw: () => void }, options: { zIndex?: number } = {}) {
+// Initialize PixiJS application
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+const app = new PIXI.Application();
+
+await app.init({
+  canvas,
+  width: Config.width,
+  height: Config.height,
+  backgroundColor: 0xffffff,
+  resolution: window.devicePixelRatio || 1,
+  autoDensity: true,
+});
+
+const stage = app.stage;
+
+function register(element: { rootElement: PIXI.Container, draw: () => void }, options: { zIndex?: number } = {}) {
   stage.addChild(element.rootElement);
   element.draw();
-  if (options.zIndex) {
+  if (options.zIndex !== undefined) {
     stage.setChildIndex(element.rootElement, options.zIndex);
   }
 }
-
-const sizeUp = function() {
-  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-  canvas.width = Config.width;
-  canvas.height = Config.height;
-}
-sizeUp();
 
 // ============================================================================
 // Setup Item Types (Prototype - will load from JSON in Phase 3)
@@ -37,7 +46,7 @@ sizeUp();
 const prototypeItemTypes: ItemType[] = [];
 for (let i = 0; i < 25; i++) {
   const hue = (i / 25) * 360; // Distribute colors across hue spectrum
-  const color = createjs.Graphics.getHSL(hue, 80, 80);
+  const color = hslToHex(hue, 80, 80);
 
   const itemType: ItemType = {
     id: `prototype_tile_${i}`,
@@ -59,11 +68,8 @@ for (let i = 0; i < 25; i++) {
 console.log(`Registered ${itemTypeRegistry.count} item types`);
 
 // ============================================================================
-// Setup Stage and Components
+// Setup Components
 // ============================================================================
-
-const stage = new createjs.Stage("canvas");
-stage.clear();
 
 // Create farm map grid
 const img = new Image();
@@ -143,7 +149,15 @@ prototypeItemTypes.forEach((itemType, i) => {
 // FPS Counter
 // ============================================================================
 
-const fpsLabel = new createjs.Text("-- fps", "bold 18px Arial", "#444");
+const fpsLabel = new PIXI.Text({
+  text: "-- fps",
+  style: {
+    fontFamily: 'Arial',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fill: 0x444444,
+  }
+});
 stage.addChild(fpsLabel);
 fpsLabel.x = 10;
 fpsLabel.y = 20;
@@ -152,23 +166,34 @@ fpsLabel.y = 20;
 // Game Loop
 // ============================================================================
 
-createjs.Ticker.timingMode = createjs.Ticker.RAF;
-createjs.Ticker.addEventListener("tick", (event) => {
-  fpsLabel.text = Math.round(createjs.Ticker.getMeasuredFPS()) + " fps";
-  stage.update(event);
+let lastTime = performance.now();
+let frameCount = 0;
+let fps = 0;
+
+app.ticker.add(() => {
+  frameCount++;
+  const currentTime = performance.now();
+  const elapsed = currentTime - lastTime;
+
+  if (elapsed >= 1000) {
+    fps = Math.round((frameCount * 1000) / elapsed);
+    fpsLabel.text = `${fps} fps`;
+    frameCount = 0;
+    lastTime = currentTime;
+  }
 });
-stage.framerate = 40;
-stage.enableMouseOver();
 
 // ============================================================================
 // Debug Logging
 // ============================================================================
 
+console.log('PixiJS app', app);
 console.log('stage', stage);
 console.log('map', map);
 console.log('gameState', gameState);
 
 // Expose to window for debugging
+(window as any).app = app;
 (window as any).stage = stage;
 (window as any).map = map;
 (window as any).gameState = gameState;
