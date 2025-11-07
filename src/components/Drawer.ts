@@ -47,7 +47,7 @@ class Drawer implements Renderable, Dimensional, IContainer {
     this.rootElement.y = y;
   }
 
-  corners() : { x: number, y: number }[] {
+  corners() {
     return this.grid.corners().map((slot) => {
       return {
         x: slot.x + this.rootElement.x,

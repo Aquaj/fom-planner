@@ -72,3 +72,6 @@ export interface MouseEventData {
   stageX: number;
   stageY: number;
 }
+
+// Re-export data models
+export * from './models';

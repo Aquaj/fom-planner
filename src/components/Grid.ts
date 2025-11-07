@@ -58,13 +58,13 @@ class Grid implements Renderable, Dimensional, Pannable {
       .beginStroke("black")
       .drawRect(0, 0, this.width, this.height)
 
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        const width = this.width / this.cols;
-        const height = this.height / this.rows;
+    for (let row = 0; row < this.rows; row++) {
+      for (let col = 0; col < this.cols; col++) {
+        const slotWidth = this.width / this.cols;
+        const slotHeight = this.height / this.rows;
 
-        var tileSlot = new TileSlot(x + "_" + y, width, height);
-        tileSlot.setPosition(x * width, y * height);
+        const tileSlot = new TileSlot(`${row}_${col}`, slotWidth, slotHeight, row, col);
+        tileSlot.setPosition(col * slotWidth, row * slotHeight);
         this.rootElement.setChildIndex(tileSlot.rootElement, 1);
         this.slots.push(tileSlot);
 
@@ -73,7 +73,7 @@ class Grid implements Renderable, Dimensional, Pannable {
     }
   }
 
-  corners() : { x: number, y: number }[] {
+  corners() : { x: number, y: number, slot: TileSlot }[] {
     return this.slots.map((slot) => {
       return {
         x: slot.rootElement.x + this.rootElement.x,
