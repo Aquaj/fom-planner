@@ -5,7 +5,7 @@ import Viewport from './viewport';
 import Tile from './tile';
 import TileTemplate from './tile_template';
 import Drawer from './drawer';
-import { magnetizeTile } from './magnetism';
+import { magnetizeTile, demagnetize } from './magnetism';
 import pannable from "./pannable";
 
 function register(element: { rootElement: createjs.DisplayObject, draw: () => void }, options: { zIndex?: number } = {}) {
@@ -90,7 +90,6 @@ console.log('stage', stage);
 console.log('map', map);
 
 // TODO:
-// - Refactor magnetism that's 🍝 right now
 // - Tile removal
-// - Collision
-// - See the actual features from Stardew Valley farm planner
+// - Collision detection
+// - Add FoM-specific features (see ROADMAP.md for full plan)
