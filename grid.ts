@@ -1,27 +1,39 @@
 import * as createjs from "createjs-module";
 import TileSlot from "./tile_slot";
+import type { Renderable, Dimensional, Pannable } from './types';
 
-class Grid {
+class Grid implements Renderable, Dimensional, Pannable {
   rootElement: createjs.Container;
   border: createjs.Shape;
   rows: number;
   cols: number;
   height: number;
   width: number;
+  x: number;
+  y: number;
   selectedRectangleId: string | null;
   slots: TileSlot[];
   panner: (event: createjs.Event) => void;
   backgroundImage: string | null;
 
-  constructor(rows: number, cols: number, width?: number = null, height?: number = null, backgroundImage?: string = null) {
+  constructor(rows: number, cols: number, width: number = 0, height: number = 0, backgroundImage: HTMLImageElement | null = null) {
     this.rows = rows;
     this.cols = cols;
     this.height = height;
     this.width = width;
+    this.x = 0;
+    this.y = 0;
     this.rootElement = new createjs.Container();
     this.selectedRectangleId = null;
-    this.backgroundImage = backgroundImage;
+    this.backgroundImage = backgroundImage as any; // Image element stored for background
     this.slots = [];
+  }
+
+  setPosition(x: number, y: number): void {
+    this.x = x;
+    this.y = y;
+    this.rootElement.x = x;
+    this.rootElement.y = y;
   }
 
   draw() : void {

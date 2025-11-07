@@ -1,35 +1,41 @@
+import createjs from "createjs-module";
+import type { Pannable as IPannable, Point } from './types';
+
 const pannable = {
-  makePannable: function (container: any) {
-    container.panCallbacks = [];
-    container.onPan = (callback: (delta: { x: number, y: number }) => void) => {
-      container.panCallbacks.push(callback);
-    }
-
-    container.rootElement.addEventListener("mousedown", (event) => {
+  /**
+   * Make a container pannable (draggable to move viewport)
+   */
+  makePannable: function (container: IPannable): void {
+    container.rootElement.on("mousedown", (event: createjs.Event) => {
       const originalPos = { x: container.rootElement.x, y: container.rootElement.y };
-      const mousedownPos0 = {'x': event.stageX, 'y': event.stageY};
+      const mousedownPos = { x: event.stageX, y: event.stageY };
 
-      container.panner = (ev) => this.pan(ev, container, originalPos, mousedownPos0);
-      container.rootElement.addEventListener('pressmove', container.panner);
-    });
-    container.rootElement.addEventListener("pressup", (event) => {
-      if (container.panner) {
-        container.rootElement.removeEventListener('pressmove', this.panner);
-        container.panner = null;
-      }
+      const mousemove = (event: createjs.Event) => {
+        this.pan(event, container, originalPos, mousedownPos);
+      };
+
+      container.rootElement.on("pressmove", mousemove);
+
+      container.rootElement.on("pressup", () => {
+        container.rootElement.off("pressmove", mousemove);
+      });
     });
   },
 
-  pan: function (event: createjs.Event, element: any, originalPos: { x: number, y: number }, mousedownPos0: { x: number, y: number }) {
-    const panDelta = {
-      x: event.stageX - mousedownPos0.x,
-      y: event.stageY - mousedownPos0.y
-    };
+  /**
+   * Handle pan movement
+   */
+  pan: function (
+    event: createjs.Event,
+    element: IPannable,
+    originalPos: Point,
+    mousedownPos: Point
+  ): void {
+    const deltaX = event.stageX - mousedownPos.x;
+    const deltaY = event.stageY - mousedownPos.y;
 
-    element.rootElement.x = originalPos.x + panDelta.x;
-    element.rootElement.y = originalPos.y + panDelta.y;
-
-    element.panCallbacks.forEach((callback) => callback(panDelta));
+    element.rootElement.x = originalPos.x + deltaX;
+    element.rootElement.y = originalPos.y + deltaY;
   }
 }
 
