@@ -1,5 +1,6 @@
-import * as createjs from "createjs-module";
+import * as PIXI from 'pixi.js';
 import type { TileData, ItemType } from '../types';
+import { cssColorToHex } from '../rendering/ShapeRenderer';
 
 /**
  * Tile (View Component)
@@ -14,14 +15,21 @@ import type { TileData, ItemType } from '../types';
  * - Sync visual state with data
  */
 class Tile {
-  /** CreateJS display object */
-  rootElement: createjs.Shape;
+  /** PixiJS display container */
+  rootElement: PIXI.Container;
+
+  /** Graphics object for rendering the tile */
+  private graphics: PIXI.Graphics;
 
   /** Drag event callbacks */
-  private onDragCallbacks: ((event: createjs.Event) => boolean | void)[] = [];
+  private onDragCallbacks: ((event: PIXI.FederatedPointerEvent) => boolean | void)[] = [];
 
   /** Drop event callbacks */
-  private onDropCallbacks: ((event: createjs.Event) => void)[] = [];
+  private onDropCallbacks: ((event: PIXI.FederatedPointerEvent) => void)[] = [];
+
+  /** Drag state */
+  private isDragging = false;
+  private dragOffset = { x: 0, y: 0 };
 
   /**
    * Create a new Tile view
@@ -33,12 +41,19 @@ class Tile {
     private data: TileData,
     private itemType: ItemType
   ) {
-    this.rootElement = new createjs.Shape();
-    this.rootElement.cursor = "pointer";
+    this.rootElement = new PIXI.Container();
+    this.graphics = new PIXI.Graphics();
+    this.rootElement.addChild(this.graphics);
+
+    // Enable interactivity
+    this.rootElement.eventMode = 'static';
+    this.rootElement.cursor = 'pointer';
 
     // Attach event handlers
-    this.rootElement.on("pressmove", (event: createjs.Event) => this.handleDrag(event));
-    this.rootElement.on("pressup", (event: createjs.Event) => this.handleDrop(event));
+    this.rootElement.on('pointerdown', (event: PIXI.FederatedPointerEvent) => this.handlePointerDown(event));
+    this.rootElement.on('pointermove', (event: PIXI.FederatedPointerEvent) => this.handlePointerMove(event));
+    this.rootElement.on('pointerup', (event: PIXI.FederatedPointerEvent) => this.handlePointerUp(event));
+    this.rootElement.on('pointerupoutside', (event: PIXI.FederatedPointerEvent) => this.handlePointerUp(event));
 
     // Initial render
     this.render();
@@ -92,12 +107,12 @@ class Tile {
   private render(): void {
     const { width, height } = this.itemType;
     const color = this.itemType.color || "lightblue";
+    const colorHex = typeof color === 'string' ? cssColorToHex(color) : color;
 
-    this.rootElement.graphics.clear()
-      .beginFill(color)
-      .setStrokeStyle(1)
-      .beginStroke("black")
-      .drawRect(0, 0, width, height);
+    this.graphics.clear();
+    this.graphics.rect(0, 0, width, height);
+    this.graphics.fill({ color: colorHex, alpha: 1 });
+    this.graphics.stroke({ color: 0x000000, width: 1 });
 
     // Update position
     this.rootElement.x = this.data.x;
@@ -108,17 +123,32 @@ class Tile {
   }
 
   /**
-   * Cache the graphics for better performance
+   * Cache the graphics for better performance (no-op in PixiJS, kept for API compatibility)
    */
   draw(): void {
-    const { width, height } = this.itemType;
-    this.rootElement.cache(0, 0, width, height);
+    // PixiJS handles caching automatically with its WebGL renderer
+    // This method is kept for backward compatibility
   }
 
   /**
-   * Handle drag event
+   * Handle pointer down event (start of drag)
    */
-  private handleDrag(event: createjs.Event): void {
+  private handlePointerDown(event: PIXI.FederatedPointerEvent): void {
+    this.isDragging = true;
+
+    // Store the offset from the tile's position to where we clicked
+    this.dragOffset.x = event.global.x - this.rootElement.x;
+    this.dragOffset.y = event.global.y - this.rootElement.y;
+
+    event.stopPropagation();
+  }
+
+  /**
+   * Handle pointer move event (during drag)
+   */
+  private handlePointerMove(event: PIXI.FederatedPointerEvent): void {
+    if (!this.isDragging) return;
+
     let hasSetPosition = false;
 
     // Call all drag callbacks
@@ -130,28 +160,36 @@ class Tile {
 
     // Default drag behavior if no callback handled it
     if (!hasSetPosition) {
-      const newPos = this.rootElement.parent.globalToLocal(event.stageX, event.stageY);
-      this.setPosition(
-        newPos.x - this.itemType.width / 2,
-        newPos.y - this.itemType.height / 2
-      );
+      // Convert global coordinates to parent's local coordinates
+      if (this.rootElement.parent) {
+        const localPos = this.rootElement.parent.toLocal(event.global);
+        this.setPosition(
+          localPos.x - this.itemType.width / 2,
+          localPos.y - this.itemType.height / 2
+        );
+      }
     }
 
     event.stopPropagation();
   }
 
   /**
-   * Handle drop event
+   * Handle pointer up event (end of drag)
    */
-  private handleDrop(event: createjs.Event): void {
+  private handlePointerUp(event: PIXI.FederatedPointerEvent): void {
+    if (!this.isDragging) return;
+
+    this.isDragging = false;
     this.onDropCallbacks.forEach((callback) => callback(event));
+
+    event.stopPropagation();
   }
 
   /**
    * Register a drag callback
    * Returns an unsubscribe function
    */
-  onDrag(callback: (event: createjs.Event) => boolean | void): () => void {
+  onDrag(callback: (event: PIXI.FederatedPointerEvent) => boolean | void): () => void {
     this.onDragCallbacks.push(callback);
     return () => {
       const index = this.onDragCallbacks.indexOf(callback);
@@ -165,7 +203,7 @@ class Tile {
    * Register a drop callback
    * Returns an unsubscribe function
    */
-  onDrop(callback: (event: createjs.Event) => void): () => void {
+  onDrop(callback: (event: PIXI.FederatedPointerEvent) => void): () => void {
     this.onDropCallbacks.push(callback);
     return () => {
       const index = this.onDropCallbacks.indexOf(callback);
@@ -179,7 +217,8 @@ class Tile {
    * Clean up (remove event listeners, etc.)
    */
   destroy(): void {
-    this.rootElement.removeAllEventListeners();
+    this.rootElement.removeAllListeners();
+    this.graphics.destroy();
     this.onDragCallbacks = [];
     this.onDropCallbacks = [];
   }

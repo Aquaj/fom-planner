@@ -1,4 +1,4 @@
-import * as createjs from "createjs-module";
+import * as PIXI from 'pixi.js';
 import type { SlotPosition } from '../types';
 
 /**
@@ -12,10 +12,10 @@ class TileSlot {
   id: string;
 
   /** Container for tiles placed in this slot */
-  rootElement: createjs.Container;
+  rootElement: PIXI.Container;
 
   /** Visual border */
-  private border: createjs.Shape;
+  private border: PIXI.Graphics;
 
   /** Slot dimensions */
   width: number;
@@ -41,11 +41,11 @@ class TileSlot {
     this.row = row;
     this.col = col;
 
-    // Create container (correct type!)
-    this.rootElement = new createjs.Container();
+    // Create container
+    this.rootElement = new PIXI.Container();
 
     // Create border
-    this.border = new createjs.Shape();
+    this.border = new PIXI.Graphics();
     this.rootElement.addChild(this.border);
 
     this.render();
@@ -55,13 +55,9 @@ class TileSlot {
    * Render the slot border
    */
   private render(): void {
-    this.border.graphics.clear()
-      .setStrokeStyle(1)
-      .beginStroke("black")
-      .drawRect(0, 0, this.width, this.height);
-
-    this.border.alpha = 0.1; // Subtle border
-    this.border.cache(0, 0, this.width, this.height);
+    this.border.clear();
+    this.border.rect(0, 0, this.width, this.height);
+    this.border.stroke({ color: 0x000000, width: 1, alpha: 0.1 });
   }
 
   /**
@@ -106,7 +102,8 @@ class TileSlot {
    * Get the global position of this slot
    */
   getGlobalPosition(): { x: number; y: number } {
-    return this.rootElement.localToGlobal(0, 0);
+    const pos = this.rootElement.toGlobal({ x: 0, y: 0 });
+    return { x: pos.x, y: pos.y };
   }
 }
 
