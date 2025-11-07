@@ -49,7 +49,6 @@ function snapToClosest(draggable: Draggable, cursor: createjs.Event) {
     const diffX = Math.abs(cursor.x - globalSlotPos.x);
     const diffY = Math.abs(cursor.y - globalSlotPos.y);
     const d = Math.sqrt(diffX * diffX + diffY * diffY);
-    debugger;
 
     // If the current snap is closeEnough and the closest (so far)
     // Then choose it to snap to.
@@ -131,4 +130,4 @@ function tileSnap(tile, point, stage) {
   return didSnap;
 }
 
-export { magnetizeTile, magnetize, demagnetize, tileSnap };
+export { magnetizeTile, magnetize, tileSnap };
