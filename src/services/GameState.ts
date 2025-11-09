@@ -65,7 +65,7 @@ export class GameState {
   updateTile(id: EntityId, updates: Partial<TileData>): void {
     const tile = this.tiles.get(id);
     if (!tile) {
-      throw new Error(`Tile "${id}" not found`);
+      return; // Silently ignore updates to non-existent tiles
     }
     this.tiles.set(id, { ...tile, ...updates });
   }
