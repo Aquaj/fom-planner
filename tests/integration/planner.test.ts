@@ -19,11 +19,11 @@ describe('Farm Planner Integration', () => {
       const wheatType: ItemType = {
         id: 'crop_wheat',
         name: 'Wheat',
-        category: 'crops',
+        category: 'crop',
         width: 32,
         height: 32,
         sprite: 'wheat.png',
-        color: 0xffff00,
+        color: '#ffff00',
         rotatable: false,
         collidable: true,
       };
@@ -66,22 +66,22 @@ describe('Farm Planner Integration', () => {
         {
           id: 'crop_wheat',
           name: 'Wheat',
-          category: 'crops',
+          category: 'crop',
           width: 32,
           height: 32,
           sprite: 'wheat.png',
-          color: 0xffff00,
+          color: '#ffff00',
           rotatable: false,
           collidable: true,
         },
         {
           id: 'building_barn',
           name: 'Barn',
-          category: 'buildings',
+          category: 'building',
           width: 96,
           height: 96,
           sprite: 'barn.png',
-          color: 0x8b4513,
+          color: '#8b4513',
           rotatable: false,
           collidable: true,
         },
@@ -119,11 +119,11 @@ describe('Farm Planner Integration', () => {
       const itemType: ItemType = {
         id: 'crop_wheat',
         name: 'Wheat',
-        category: 'crops',
+        category: 'crop',
         width: 32,
         height: 32,
         sprite: 'wheat.png',
-        color: 0xffff00,
+        color: '#ffff00',
         rotatable: false,
         collidable: true,
       };
@@ -154,47 +154,47 @@ describe('Farm Planner Integration', () => {
           {
             id: 'crop_wheat',
             name: 'Wheat',
-            category: 'crops',
+            category: 'crop' as const,
             width: 32,
             height: 32,
             sprite: 'wheat.png',
-            color: 0xffff00,
+            color: '#ffff00',
             rotatable: false,
             collidable: true,
           },
           {
             id: 'crop_corn',
             name: 'Corn',
-            category: 'crops',
+            category: 'crop' as const,
             width: 32,
             height: 32,
             sprite: 'corn.png',
-            color: 0xffd700,
+            color: '#ffd700',
             rotatable: false,
             collidable: true,
           },
           {
             id: 'building_barn',
             name: 'Barn',
-            category: 'buildings',
+            category: 'building' as const,
             width: 96,
             height: 96,
             sprite: 'barn.png',
-            color: 0x8b4513,
+            color: '#8b4513',
             rotatable: false,
             collidable: true,
           },
-        ],
+        ] as ItemType[],
       };
 
       itemTypeRegistry.loadFromJSON(config);
       expect(itemTypeRegistry.count).toBe(3);
 
       // 2. Verify categories work
-      const crops = itemTypeRegistry.getByCategory('crops');
+      const crops = itemTypeRegistry.getByCategory('crop');
       expect(crops).toHaveLength(2);
 
-      const buildings = itemTypeRegistry.getByCategory('buildings');
+      const buildings = itemTypeRegistry.getByCategory('building');
       expect(buildings).toHaveLength(1);
 
       // 3. Create tiles using loaded types
@@ -216,11 +216,11 @@ describe('Farm Planner Integration', () => {
       const itemType: ItemType = {
         id: 'crop_wheat',
         name: 'Wheat',
-        category: 'crops',
+        category: 'crop',
         width: 32,
         height: 32,
         sprite: 'wheat.png',
-        color: 0xffff00,
+        color: '#ffff00',
         rotatable: false,
         collidable: true,
       };
@@ -244,33 +244,33 @@ describe('Farm Planner Integration', () => {
         {
           id: 'crop_wheat',
           name: 'Wheat',
-          category: 'crops',
+          category: 'crop',
           width: 32,
           height: 32,
           sprite: 'wheat.png',
-          color: 0xffff00,
+          color: '#ffff00',
           rotatable: false,
           collidable: true,
         },
         {
           id: 'crop_corn',
           name: 'Corn',
-          category: 'crops',
+          category: 'crop',
           width: 32,
           height: 32,
           sprite: 'corn.png',
-          color: 0xffd700,
+          color: '#ffd700',
           rotatable: false,
           collidable: true,
         },
         {
           id: 'deco_sprinkler',
           name: 'Sprinkler',
-          category: 'decorations',
+          category: 'decoration',
           width: 16,
           height: 16,
           sprite: 'sprinkler.png',
-          color: 0x4169e1,
+          color: '#4169e1',
           rotatable: true,
           collidable: false,
         },

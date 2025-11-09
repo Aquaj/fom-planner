@@ -18,11 +18,11 @@ describe('Tile', () => {
     itemType = {
       id: 'crop_wheat',
       name: 'Wheat',
-      category: 'crops',
+      category: 'crop',
       width: 32,
       height: 32,
       sprite: 'wheat.png',
-      color: 0xffff00,
+      color: '#ffff00',
       rotatable: false,
       collidable: true,
     };

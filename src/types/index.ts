@@ -2,13 +2,13 @@
  * Common TypeScript interfaces and types for the FoM-Planner project
  */
 
-import createjs from 'createjs-module';
+import * as PIXI from 'pixi.js';
 
 /**
  * An element that can be rendered on the stage
  */
 export interface Renderable {
-  rootElement: createjs.DisplayObject;
+  rootElement: PIXI.Container;
   draw(): void;
 }
 

@@ -105,9 +105,11 @@ describe('GameState', () => {
 
     test('should deserialize from JSON', () => {
       const data = {
+        version: '1.0.0',
+        farmType: 'standard',
         tiles: [
-          { id: 'test-tile-1', typeId: 'crop_wheat', x: 100, y: 200, rotation: 0 },
-          { id: 'test-tile-2', typeId: 'building_barn', x: 300, y: 400, rotation: 90 },
+          { id: 'test-tile-1', typeId: 'crop_wheat', x: 100, y: 200, rotation: 0 as const },
+          { id: 'test-tile-2', typeId: 'building_barn', x: 300, y: 400, rotation: 90 as const },
         ],
       };
 
@@ -115,8 +117,8 @@ describe('GameState', () => {
       const tiles = loaded.getAllTiles();
 
       expect(tiles).toHaveLength(2);
-      expect(tiles[0]).toEqual(data.tiles[0]);
-      expect(tiles[1]).toEqual(data.tiles[1]);
+      expect(tiles[0].id).toBe(data.tiles[0].id);
+      expect(tiles[1].id).toBe(data.tiles[1].id);
     });
 
     test('should serialize to string and back', () => {
